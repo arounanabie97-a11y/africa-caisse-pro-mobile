@@ -27,7 +27,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Generate Android fingerprints
-       run: |
-  gradle :app:assembleDebug --no-daemon
-  gradle :app:signingReport --no-daemon
+                run: |
+                      gradle :app:assembleDebug --no-daemon
+                      gradle :app:signingReport --no-daemon
 
