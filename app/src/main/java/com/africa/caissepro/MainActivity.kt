@@ -1,262 +1,192 @@
 
-package com.africa.caissepro
+private fun showHome() {
+    val layout = createLayout()
 
-import android.app.Activity
-import android.os.Bundle
-import android.graphics.Color
-import android.view.Gravity
-import android.widget.*
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.PhoneAuthOptions
-import com.google.firebase.auth.PhoneAuthProvider
-import com.google.firebase.auth.PhoneAuthCredential
-import java.util.concurrent.TimeUnit
+    addTitle(layout)
 
-class MainActivity : Activity() {
+    addSubtitle(
+        layout,
+        "TABLEAU DE BORD COMMERCANT"
+    )
 
-    private lateinit var auth: FirebaseAuth
-    private lateinit var phoneInput: EditText
-    private lateinit var codeInput: EditText
-    private var verificationId: String? = null
-    private var phoneNumber = ""
+    val user = auth.currentUser
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    val welcome = TextView(this).apply {
+        text = "Bienvenue dans votre espace commercial"
+        textSize = 17f
+        setTextColor(Color.rgb(15, 23, 42))
+        gravity = Gravity.CENTER
+        setPadding(0, dp(15), 0, dp(20))
+    }
+    layout.addView(welcome)
 
-        auth = FirebaseAuth.getInstance()
-
-        window.statusBarColor = Color.rgb(15, 23, 42)
-        window.navigationBarColor = Color.rgb(15, 23, 42)
-
-        if (auth.currentUser != null) {
-            showHome()
-        } else {
-            showPhoneScreen()
-        }
+    addButton(layout, "MON ETABLISSEMENT") {
+        showCommerceScreen()
     }
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
-
-    private fun createLayout(): LinearLayout {
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(28), dp(40), dp(28), dp(40))
-            setBackgroundColor(Color.rgb(248, 250, 252))
-        }
+    addButton(layout, "PRODUITS ET STOCK") {
+        showModule(
+            "PRODUITS ET STOCK",
+            "Gestion des produits, categories, prix et quantites disponibles."
+        )
     }
 
-    private fun addTitle(layout: LinearLayout) {
-        val title = TextView(this).apply {
-            text = "AFRICA CAISSE PRO"
-            textSize = 27f
-            setTextColor(Color.rgb(15, 23, 42))
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            gravity = Gravity.CENTER
-        }
-        layout.addView(title)
+    addButton(layout, "ENREGISTRER UNE VENTE") {
+        showModule(
+            "NOUVELLE VENTE",
+            "Selection des produits, quantites, calcul du total et validation de la vente."
+        )
     }
 
-    private fun addSubtitle(layout: LinearLayout, message: String) {
-        val subtitle = TextView(this).apply {
-            text = message
+    addButton(layout, "HISTORIQUE DES VENTES") {
+        showModule(
+            "HISTORIQUE",
+            "Consultez toutes vos transactions commerciales."
+        )
+    }
+
+    addButton(layout, "DEPENSES ET BENEFICES") {
+        showModule(
+            "GESTION FINANCIERE",
+            "Suivi des depenses, recettes et benefices."
+        )
+    }
+
+    addButton(layout, "RAPPORTS") {
+        showModule(
+            "RAPPORTS",
+            "Bilans journaliers, mensuels et annuels."
+        )
+    }
+
+    val account = TextView(this).apply {
+        text = "Compte : ${user?.phoneNumber ?: "Mode developpement"}"
+        textSize = 12f
+        setTextColor(Color.DKGRAY)
+        gravity = Gravity.CENTER
+        setPadding(0, dp(20), 0, dp(10))
+    }
+
+    layout.addView(account)
+
+    addButton(layout, "SE DECONNECTER") {
+        auth.signOut()
+        showPhoneScreen()
+    }
+
+    setContentView(layout)
+}
+
+private fun showCommerceScreen() {
+    val layout = createLayout()
+
+    addTitle(layout)
+
+    addSubtitle(
+        layout,
+        "ENREGISTREMENT DE VOTRE ETABLISSEMENT"
+    )
+
+    val prefs = getSharedPreferences(
+        "merchant_profile",
+        MODE_PRIVATE
+    )
+
+    fun createField(hintText: String, savedKey: String): EditText {
+        return EditText(this).apply {
+            hint = hintText
             textSize = 15f
-            setTextColor(Color.DKGRAY)
-            gravity = Gravity.CENTER
-            setPadding(0, dp(12), 0, dp(28))
-        }
-        layout.addView(subtitle)
-    }
-
-    private fun addButton(
-        layout: LinearLayout,
-        label: String,
-        action: () -> Unit
-    ) {
-        val button = Button(this).apply {
-            text = label
-            textSize = 16f
-            setTextColor(Color.WHITE)
-            setBackgroundColor(Color.rgb(15, 23, 42))
-            setOnClickListener { action() }
-        }
-
-        layout.addView(
-            button,
-            LinearLayout.LayoutParams(
-                -1, dp(55)
-            ).apply {
-                topMargin = dp(18)
-            }
-        )
-    }
-
-    private fun showPhoneScreen() {
-        val layout = createLayout()
-        addTitle(layout)
-        addSubtitle(
-            layout,
-            "Votre gestion commerciale simplifiée"
-        )
-
-        phoneInput = EditText(this).apply {
-            hint = "Numéro de téléphone (+226...)"
-            textSize = 16f
-            inputType = 3
             setSingleLine(true)
+            setText(prefs.getString(savedKey, ""))
         }
-
-        layout.addView(
-            phoneInput,
-            LinearLayout.LayoutParams(-1, dp(55))
-        )
-
-        addButton(layout, "RECEVOIR LE CODE SMS") {
-            phoneNumber = phoneInput.text.toString().trim()
-
-            if (!phoneNumber.startsWith("+") ||
-                phoneNumber.length < 10) {
-                Toast.makeText(
-                    this,
-                    "Entrez un numéro international valide",
-                    Toast.LENGTH_LONG
-                ).show()
-            } else {
-                sendVerificationCode()
-            }
-        }
-
-        setContentView(layout)
     }
 
-    private fun sendVerificationCode() {
+    val name = createField(
+        "Nom du commerce",
+        "name"
+    )
 
-        Toast.makeText(
-            this,
-            "Envoi du code SMS...",
-            Toast.LENGTH_SHORT
-        ).show()
+    val owner = createField(
+        "Nom du gerant",
+        "owner"
+    )
 
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phoneNumber)
-            .setTimeout(60L, TimeUnit.SECONDS)
-            .setActivity(this)
-            .setCallbacks(
-                object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+    val phone = createField(
+        "Telephone commercial",
+        "phone"
+    )
 
-                    override fun onVerificationCompleted(
-                        credential: PhoneAuthCredential
-                    ) {
-                        signIn(credential)
-                    }
+    val city = createField(
+        "Ville",
+        "city"
+    )
 
-                    override fun onVerificationFailed(
-                        e: Exception
-                    ) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Erreur SMS : ${e.localizedMessage}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+    val type = createField(
+        "Activite commerciale",
+        "type"
+    )
 
-                    override fun onCodeSent(
-                        id: String,
-                        token: PhoneAuthProvider.ForceResendingToken
-                    ) {
-                        verificationId = id
-                        showCodeScreen()
-                    }
-                }
-            )
-            .build()
+    layout.addView(name)
+    layout.addView(owner)
+    layout.addView(phone)
+    layout.addView(city)
+    layout.addView(type)
 
-        PhoneAuthProvider.verifyPhoneNumber(options)
+    addButton(layout, "ENREGISTRER MON COMMERCE") {
+
+        if (name.text.toString().trim().isEmpty()) {
+            Toast.makeText(
+                this,
+                "Veuillez saisir le nom du commerce",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+
+            prefs.edit()
+                .putString("name", name.text.toString())
+                .putString("owner", owner.text.toString())
+                .putString("phone", phone.text.toString())
+                .putString("city", city.text.toString())
+                .putString("type", type.text.toString())
+                .apply()
+
+            Toast.makeText(
+                this,
+                "Informations enregistrees sur cet appareil",
+                Toast.LENGTH_LONG
+            ).show()
+
+            showHome()
+        }
     }
 
-    private fun showCodeScreen() {
-        val layout = createLayout()
-        addTitle(layout)
-
-        addSubtitle(
-            layout,
-            "Un code de vérification a été envoyé au $phoneNumber"
-        )
-
-        codeInput = EditText(this).apply {
-            hint = "Code reçu par SMS"
-            textSize = 18f
-            inputType = 2
-            gravity = Gravity.CENTER
-            setSingleLine(true)
-        }
-
-        layout.addView(
-            codeInput,
-            LinearLayout.LayoutParams(-1, dp(55))
-        )
-
-        addButton(layout, "VÉRIFIER LE CODE") {
-            val code = codeInput.text.toString().trim()
-            val id = verificationId
-
-            if (id == null || code.length != 6) {
-                Toast.makeText(
-                    this,
-                    "Entrez le code à 6 chiffres",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                val credential =
-                    PhoneAuthProvider.getCredential(id, code)
-                signIn(credential)
-            }
-        }
-
-        setContentView(layout)
+    addButton(layout, "RETOUR AU TABLEAU DE BORD") {
+        showHome()
     }
 
-    private fun signIn(credential: PhoneAuthCredential) {
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    showHome()
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Vérification échouée : ${task.exception?.localizedMessage}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
+    setContentView(layout)
+}
+
+private fun showModule(title: String, description: String) {
+    val layout = createLayout()
+
+    addTitle(layout)
+
+    addSubtitle(layout, title)
+
+    val info = TextView(this).apply {
+        text = description
+        textSize = 17f
+        setTextColor(Color.rgb(50, 60, 75))
+        gravity = Gravity.CENTER
+        setPadding(0, dp(30), 0, dp(30))
     }
 
-    private fun showHome() {
-        val layout = createLayout()
-        addTitle(layout)
+    layout.addView(info)
 
-        addSubtitle(
-            layout,
-            "Connexion réussie ! Bienvenue dans votre espace commercial."
-        )
-
-        val user = auth.currentUser
-
-        val info = TextView(this).apply {
-            text = "Compte : ${user?.phoneNumber ?: ""}"
-            textSize = 16f
-            setTextColor(Color.DKGRAY)
-            gravity = Gravity.CENTER
-        }
-
-        layout.addView(info)
-
-        addButton(layout, "SE DÉCONNECTER") {
-            auth.signOut()
-            showPhoneScreen()
-        }
-
-        setContentView(layout)
+    addButton(layout, "RETOUR AU TABLEAU DE BORD") {
+        showHome()
     }
+
+    setContentView(layout)
 }
