@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "78136633319",
+    "project_id": "africa-caisse",
+    "storage_bucket": "africa-caisse.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78136633319:android:0497dce15fb19e80b3ff42",
+        "android_client_info": {
+          "package_name": "com.africa.caissepro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf7cYbq8KN4VXloFZOvzEkKO17Yf9vpfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78136633319:android:341f5797029fdd21b3ff42",
+        "android_client_info": {
+          "package_name": "com.africacaisse.pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf7cYbq8KN4VXloFZOvzEkKO17Yf9vpfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
