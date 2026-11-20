@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Bluetooth pour Android 11 et versions antérieures -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -12,6 +13,7 @@
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
+    <!-- Connexion Bluetooth Android 12 et versions récentes -->
     <uses-permission
         android:name="android.permission.BLUETOOTH_CONNECT" />
 
