@@ -2,9 +2,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Connexion Internet -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
 
-    <!-- Bluetooth pour Android 11 et versions antérieures -->
+    <!-- Bluetooth Android 11 et versions anterieures -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -13,23 +15,28 @@
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
-    <!-- Connexion Bluetooth Android 12 et versions récentes -->
+    <!-- Bluetooth Android 12 et versions recentes -->
     <uses-permission
         android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!-- Application AFRICA CAISSE PRO -->
     <application
         android:allowBackup="true"
         android:label="AFRICA CAISSE PRO"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
+        <!-- Activite principale -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
